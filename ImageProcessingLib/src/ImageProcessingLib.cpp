@@ -1,11 +1,11 @@
-#include "color_curve_lib.hpp"
+#include "ImageProcessingLib.hpp"
 #include <chrono>
 #include <execution>
 #include <opencv2/opencv.hpp>
 
 bool ImageProcessingLib::loadImage(const std::filesystem::path& inputPath,
                                    cv::Mat& img) {
-  img = cv::imread(inputPath.c_str());
+  img = cv::imread(inputPath.c_str(), cv::IMREAD_UNCHANGED);
   if (img.data == nullptr) {
     throw std::runtime_error{"Input image contains no data:" +
                              inputPath.string()};
@@ -57,7 +57,7 @@ ImageProcessingLib::ImageTransformer::ImageTransformer(
   }
 
   auto executionTimeStart = std::chrono::high_resolution_clock::now();
-  computeFunctionLUT(lut, parameters.function);
+  computeFunctionLUT(parameters.function, lut);
   applyLUT(lut, img);
   auto executionTimeEnd = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
