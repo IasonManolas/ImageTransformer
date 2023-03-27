@@ -1,6 +1,6 @@
 #include <execution>
 #include <iostream>
-#include "color_curve_lib.hpp"
+#include "ImageProcessingLib.hpp"
 
 ImageProcessingLib::ImageTransformer::Parameters handleCommandLineArguments(
     int argc,
