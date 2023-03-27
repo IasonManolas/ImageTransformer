@@ -3,7 +3,7 @@
 #include <execution>
 #include <opencv2/opencv.hpp>
 
-bool ColorCurveLib::loadImage(const std::filesystem::path& inputPath,
+bool ImageProcessingLib::loadImage(const std::filesystem::path& inputPath,
                               cv::Mat& img) {
   img = cv::imread(inputPath.c_str());
   if (img.data == nullptr) {
@@ -14,27 +14,27 @@ bool ColorCurveLib::loadImage(const std::filesystem::path& inputPath,
   return true;
 }
 
-void ColorCurveLib::ImageTransformer::computeFunctionLUT() {
+void ImageProcessingLib::ImageTransformer::computeFunctionLUT() {
   const float c_1 = std::pow(parameters.t / 255, parameters.g - 1);
   const auto f_1 = [c_1](float pixelValue) { return c_1 * pixelValue; };
   const int tIndex = std::min(std::max(int(parameters.t), 0), 256);
-  std::for_each(std::execution::par_unseq, LUT.begin(), LUT.begin() + tIndex,
+  std::for_each(std::execution::par_unseq, lut.begin(), lut.begin() + tIndex,
                 [this, f_1](float& value) {
-                  const size_t valueIndex = &value - &LUT[0];
+                  const size_t valueIndex = &value - &lut[0];
                   value = f_1(valueIndex);
                 });
   const float c_2 = std::pow(255, 1 - parameters.g);
   const auto f_2 = [c_2, this](float pixelValue) {
     return c_2 * std::pow(pixelValue, parameters.g);
   };
-  std::for_each(std::execution::par_unseq, LUT.begin() + tIndex, LUT.end(),
+  std::for_each(std::execution::par_unseq, lut.begin() + tIndex, lut.end(),
                 [this, f_2](float& value) {
-                  const size_t valueIndex = &value - &LUT[0];
+                  const size_t valueIndex = &value - &lut[0];
                   value = f_2(valueIndex);
                 });
 }
 
-void ColorCurveLib::normalizeLUT(std::array<float, 256>& lut) {
+void ImageProcessingLib::normalizeLUT(std::array<float, 256>& lut) {
   const auto [itMinInLUT, itMaxInLUT] =
       std::minmax_element(lut.begin(), lut.end());
   const float minInLUT = *itMinInLUT;
@@ -46,7 +46,7 @@ void ColorCurveLib::normalizeLUT(std::array<float, 256>& lut) {
                 });
 }
 
-ColorCurveLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
+ImageProcessingLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
     : parameters(parameters) {
   if (parameters.loadImageFromPath.empty()) {
     throw std::runtime_error{"Input image path is empty."};
@@ -74,7 +74,7 @@ ColorCurveLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
 
   auto executionTimeStart = std::chrono::high_resolution_clock::now();
   computeFunctionLUT();
-  applyLUT(LUT, img);
+  applyLUT(lut, img);
   auto executionTimeEnd = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
       executionTimeEnd - executionTimeStart);
@@ -84,7 +84,7 @@ ColorCurveLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
   saveImage(parameters.saveImageToPath, img);
 }
 
-void ColorCurveLib::applyLUT(const std::array<float, 256>& lut, cv::Mat& I) {
+void ImageProcessingLib::applyLUT(const std::array<float, 256>& lut, cv::Mat& I) {
   int channels = I.channels();
   int nRows = I.rows;
   int nCols = I.cols * channels;
@@ -100,7 +100,7 @@ void ColorCurveLib::applyLUT(const std::array<float, 256>& lut, cv::Mat& I) {
   });
 }
 
-bool ColorCurveLib::saveImage(const std::filesystem::path& saveToPath,
+bool ImageProcessingLib::saveImage(const std::filesystem::path& saveToPath,
                               const cv::Mat& img) {
   if (img.empty()) {
     std::cerr << "The output image is empty." << std::endl;

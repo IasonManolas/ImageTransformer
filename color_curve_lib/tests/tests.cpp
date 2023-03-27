@@ -6,7 +6,7 @@
 TEST_CASE("Read an input image") {
   cv::Mat img;
   REQUIRE(
-      ColorCurveLib::loadImage(
+      ImageProcessingLib::loadImage(
           std::filesystem::path(__FILE__).parent_path().append("monoLena.png"),
           img) == true);
 }

@@ -7,7 +7,6 @@ add_library(${PROJECT_NAME} ${LIB_SOURCES} ${LIB_HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
-include(FetchContent)
 find_package(OpenCV REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenCV_LIBS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
