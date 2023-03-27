@@ -7,8 +7,3 @@ add_subdirectory(color_curve_lib)
 add_executable(${PROJECT_NAME} "app/main.cpp")
 target_link_libraries(${PROJECT_NAME} PUBLIC color_curve_lib)
 
-include(CTest)
-#if(${SHOULD_BUILD_TESTS})
-#        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests/)
-#endif()
-

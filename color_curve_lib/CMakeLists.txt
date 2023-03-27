@@ -9,33 +9,14 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 include(FetchContent)
 find_package(OpenCV REQUIRED)
-#if(NOT OpenCV_FOUND)
-#FetchContent_Declare(OpenCV
-#        GIT_REPOSITORY	https://github.com/opencv/opencv.git
-#        GIT_TAG		4.7.0
-#        )
-#FetchContent_MakeAvailable(OpenCV)
-#set(OpenCV_DIR ${CMAKE_CURRENT_BINARY_DIR})
-#message("OpenCV dir:" ${OpenCV_DIR})
-#include_directories(${OpenCV_INCLUDE_DIRS})
-#find_package(OpenCV REQUIRED)
-#endif()
-
 target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenCV_LIBS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
 
 find_package(TBB REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
 
-###GSL
-#FetchContent_Declare(gsl
-#        GIT_REPOSITORY	https://github.com/microsoft/GSL.git
-#        GIT_TAG		main
-#        )
-#FetchContent_MakeAvailable(gsl)
-#target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft.GSL::GSL)
 
-
+include(CTest)
 if(BUILD_TESTING)
         add_subdirectory(tests)
 endif()

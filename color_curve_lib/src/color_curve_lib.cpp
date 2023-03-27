@@ -1,13 +1,10 @@
 #include "color_curve_lib.hpp"
 #include <chrono>
 #include <execution>
-//#include <gsl/assert>
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 
 bool ColorCurveLib::loadImage(const std::filesystem::path& inputPath,
                               cv::Mat& img) {
-  //  Expects(!inputPath.empty() && std::filesystem::exists(inputPath));
-
   img = cv::imread(inputPath.c_str());
   if (img.data == nullptr) {
     throw std::runtime_error{"Input image contains no data:" +
@@ -58,16 +55,16 @@ ColorCurveLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
     throw std::runtime_error{"Input file path does not exist: " +
                              parameters.loadImageFromPath.string()};
   }
-  //  if (parameters.loadImageFromPath.extension() != ".png") {
-  //    throw std::runtime_error{"A png image is expected as input."};
-  //  }
+  if (parameters.loadImageFromPath.extension() != ".png") {
+    throw std::runtime_error{"A png image is expected as input."};
+  }
   if (parameters.g < 0 || parameters.t < 0) {
     throw std::runtime_error{"g and t must be non-negative."};
   }
-  //  if (parameters.saveImageToPath.extension() != ".png") {
-  //    throw std::runtime_error{
-  //        "Output image file path must have a .png extension."};
-  //  }
+  if (parameters.saveImageToPath.extension() != ".png") {
+    throw std::runtime_error{
+        "Output image file path must have a .png extension."};
+  }
 
   try {
     loadImage(parameters.loadImageFromPath, img);
@@ -77,11 +74,6 @@ ColorCurveLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
 
   auto executionTimeStart = std::chrono::high_resolution_clock::now();
   computeFunctionLUT();
-  //  for (int pixelValue = 0; pixelValue < 256; pixelValue++) {
-  //    const float& functionValue = LUT[pixelValue];
-  //    std::cout << "pixel value: " << pixelValue
-  //              << " function value: " << functionValue << std::endl;
-  //  }
   applyLUT(LUT, img);
   auto executionTimeEnd = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
