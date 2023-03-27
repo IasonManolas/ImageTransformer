@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(${PROJECT_NAME} tests.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE color_curve_lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE ImageProcessingLib)
 cmake_path(GET CMAKE_CURRENT_LIST_DIR PARENT_PATH PARENT_DIR)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PARENT_DIR}/include)
 target_link_libraries(${PROJECT_NAME} PRIVATE Catch2::Catch2WithMain)
