@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 bool ImageProcessingLib::loadImage(const std::filesystem::path& inputPath,
-                              cv::Mat& img) {
+                                   cv::Mat& img) {
   img = cv::imread(inputPath.c_str());
   if (img.data == nullptr) {
     throw std::runtime_error{"Input image contains no data:" +
@@ -14,24 +14,10 @@ bool ImageProcessingLib::loadImage(const std::filesystem::path& inputPath,
   return true;
 }
 
-void ImageProcessingLib::ImageTransformer::computeFunctionLUT() {
-  const float c_1 = std::pow(parameters.t / 255, parameters.g - 1);
-  const auto f_1 = [c_1](float pixelValue) { return c_1 * pixelValue; };
-  const int tIndex = std::min(std::max(int(parameters.t), 0), 256);
-  std::for_each(std::execution::par_unseq, lut.begin(), lut.begin() + tIndex,
-                [this, f_1](float& value) {
-                  const size_t valueIndex = &value - &lut[0];
-                  value = f_1(valueIndex);
-                });
-  const float c_2 = std::pow(255, 1 - parameters.g);
-  const auto f_2 = [c_2, this](float pixelValue) {
-    return c_2 * std::pow(pixelValue, parameters.g);
-  };
-  std::for_each(std::execution::par_unseq, lut.begin() + tIndex, lut.end(),
-                [this, f_2](float& value) {
-                  const size_t valueIndex = &value - &lut[0];
-                  value = f_2(valueIndex);
-                });
+void ImageProcessingLib::computeFunctionLUT(
+    const std::function<void(std::array<float, 256>&)> transformationFunction,
+    std::array<float, 256>& lut) {
+  transformationFunction(lut);
 }
 
 void ImageProcessingLib::normalizeLUT(std::array<float, 256>& lut) {
@@ -46,7 +32,8 @@ void ImageProcessingLib::normalizeLUT(std::array<float, 256>& lut) {
                 });
 }
 
-ImageProcessingLib::ImageTransformer::ImageTransformer(const Parameters& parameters)
+ImageProcessingLib::ImageTransformer::ImageTransformer(
+    const Parameters& parameters)
     : parameters(parameters) {
   if (parameters.loadImageFromPath.empty()) {
     throw std::runtime_error{"Input image path is empty."};
@@ -57,9 +44,6 @@ ImageProcessingLib::ImageTransformer::ImageTransformer(const Parameters& paramet
   }
   if (parameters.loadImageFromPath.extension() != ".png") {
     throw std::runtime_error{"A png image is expected as input."};
-  }
-  if (parameters.g < 0 || parameters.t < 0) {
-    throw std::runtime_error{"g and t must be non-negative."};
   }
   if (parameters.saveImageToPath.extension() != ".png") {
     throw std::runtime_error{
@@ -73,7 +57,7 @@ ImageProcessingLib::ImageTransformer::ImageTransformer(const Parameters& paramet
   }
 
   auto executionTimeStart = std::chrono::high_resolution_clock::now();
-  computeFunctionLUT();
+  computeFunctionLUT(lut, parameters.function);
   applyLUT(lut, img);
   auto executionTimeEnd = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -84,7 +68,8 @@ ImageProcessingLib::ImageTransformer::ImageTransformer(const Parameters& paramet
   saveImage(parameters.saveImageToPath, img);
 }
 
-void ImageProcessingLib::applyLUT(const std::array<float, 256>& lut, cv::Mat& I) {
+void ImageProcessingLib::applyLUT(const std::array<float, 256>& lut,
+                                  cv::Mat& I) {
   int channels = I.channels();
   int nRows = I.rows;
   int nCols = I.cols * channels;
@@ -101,7 +86,7 @@ void ImageProcessingLib::applyLUT(const std::array<float, 256>& lut, cv::Mat& I)
 }
 
 bool ImageProcessingLib::saveImage(const std::filesystem::path& saveToPath,
-                              const cv::Mat& img) {
+                                   const cv::Mat& img) {
   if (img.empty()) {
     std::cerr << "The output image is empty." << std::endl;
     return false;

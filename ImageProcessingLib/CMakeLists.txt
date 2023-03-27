@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(color_curve_lib)
+project(ImageProcessingLib)
 
 file(GLOB LIB_SOURCES src/color_curve_lib.cpp)
 file(GLOB LIB_HEADERS include/color_curve_lib.hpp)

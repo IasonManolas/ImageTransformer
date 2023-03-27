@@ -26,14 +26,12 @@ class ImageTransformer {
         loadImageFromPath;  //!< The path from which the input image is loaded
     std::filesystem::path
         saveImageToPath;  //!< The path to which the output image is saved
-    double g;             //!< The g parameter of the applied function
-    double t;             //!< The t parameter of the applied function
+    std::function<void(std::array<float, 256>&)> function;
   };
   const Parameters parameters;
   ImageTransformer(const Parameters& parameters);
 
  private:
-  void computeFunctionLUT();
 };
 /*! \fn loadImage
  *  \param inputPath The path from which the image is loaded
@@ -48,6 +46,14 @@ bool loadImage(const std::filesystem::path& inputPath, cv::Mat& img);
  inputPath
 */
 bool saveImage(const std::filesystem::path& saveToPath, const cv::Mat& img);
+/*! \fn computeFunctionLUT
+ *  \param transformationFunction the function which shall be applied to the
+ * image
+ * \param the look-up-table computed from the given function
+ */
+void computeFunctionLUT(
+    const std::function<void(std::array<float, 256>&)> transformationFunction,
+    std::array<float, 256>& lut);
 /*! \fn applyLUT
  *  \param lut an array holding the values of a function for each possible pixel
  value in the range [0,255]
